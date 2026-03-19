@@ -1,0 +1,27 @@
+{
+  "name": "@its-not-rocket-science/ananke-historical-battles",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Historical battle validation scenarios for @its-not-rocket-science/ananke",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "scenarios"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "run:battles": "node dist/tools/run-battles.js",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "dependencies": {
+    "@its-not-rocket-science/ananke": "^0.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.8"
+  }
+}
