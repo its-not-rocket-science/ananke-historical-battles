@@ -1,115 +1,82 @@
-/**
- * agincourt.ts — Battle of Agincourt, 25 October 1415
- *
- * Historical context:
- *   An English army under Henry V defeated a larger French force in northern
- *   France during the Hundred Years' War. The English deployed approximately
- *   1,500 men-at-arms and 6,000–7,000 longbowmen. The French force is
- *   estimated at 12,000–36,000 (Rogers 2008 favours ~12,000 fighting men);
- *   the traditional figure of 25,000+ is now considered an overestimate.
- *
- *   Terrain: a freshly-ploughed muddy field between two woods at Tramecourt
- *   and Agincourt, width ~900 m funnelling to ~700 m. Thick mud from heavy
- *   overnight rain (24–25 October) severely hampered the French dismounted
- *   advance in heavy plate armour (30–45 kg per man-at-arms).
- *
- *   French casualties: approximately 6,000–10,000 dead, including three dukes,
- *   five counts, and 90+ lords. English casualties: disputed; most modern
- *   accounts give ~100–400 (Curry 2000, Barker 2005).
- *
- *   This scenario validates:
- *   1. Ranged weapon superiority (longbow, ~180 N draw, ~60 J per arrow) against
- *      armoured infantry at 50–100 m range under restrictive terrain.
- *   2. Armour-fatigue interaction: 30–45 kg plate in mud produces severe fatigue
- *      accumulation, degrading combat effectiveness on arrival at melee range.
- *   3. Asymmetric casualty ratios (≥10:1 French:English killed).
- *
- * References:
- *   Curry, A. (2000). The Battle of Agincourt: Sources and Interpretations. Boydell Press.
- *   Barker, J. (2005). Agincourt: Henry V and the Battle That Made England. Little, Brown.
- *   Rogers, C.J. (2008). "The Battle of Agincourt." In The Hundred Years War (Part II),
- *     ed. L.J. Andrew Villalon & D. Kagay. Brill.
- *   Stirland, A.J. (2000). Raising the Dead: The Skeleton Crew of King Henry V's Great Ship.
- *     Wiley. [longbow musculoskeletal analysis]
- *   Hardy, R. (1976). Longbow: A Social and Military History. Patrick Stephens.
- */
+import type { ArenaScenario } from "../ananke-internal.js";
+import { expectMeanDuration } from "../ananke-internal.js";
+import type { DirectValidationScenario } from "../types.js";
+import { ENGLISH_LONGBOWMAN, ENGLISH_MAN_AT_ARMS, FRENCH_MAN_AT_ARMS, GENOESE_CROSSBOWMAN } from "../archetypes/historical.js";
+import { ENGLISH_LONGBOW_KIT, ENGLISH_MAN_AT_ARMS_KIT, FRENCH_MAN_AT_ARMS_KIT, GENOESE_CROSSBOW_KIT } from "../equipment/historical.js";
+import { aggressivePolicy, archerSkills, closeInfantryPolicy, eliteArcherSkills, eliteInfantrySkills, makeLine, muddyField, skirmisherPolicy } from "./helpers.js";
+import { formatPct, meanGroupCasualtyRate, meanTeamCasualtyRate, meanTeamStructuralDamage } from "./validation-helpers.js";
 
-import type { BattleScenario } from "../types.js";
+const ENGLISH_LONGBOW_IDS = Array.from({ length: 8 }, (_, index) => 100 + index);
 
-export const AGINCOURT_SCENARIO: BattleScenario = {
-  id:          "agincourt-1415",
-  name:        "Battle of Agincourt (25 October 1415)",
-  year:        1415,
-  location:    "Agincourt / Tramecourt, Artois, northern France",
-  reference:   [
-    "Curry (2000), The Battle of Agincourt: Sources and Interpretations",
-    "Barker (2005), Agincourt: Henry V and the Battle That Made England",
-    "Rogers (2008), The Battle of Agincourt, in The Hundred Years War (Part II)",
-    "Hardy (1976), Longbow: A Social and Military History",
+export const AGINCOURT_SCENARIO: ArenaScenario = {
+  name: "Battle of Agincourt (1415)",
+  description: "English longbowmen and dismounted men-at-arms resist a larger French assault in deep mud.",
+  combatants: [
+    ...makeLine({ teamId: 1, count: 8, startId: 100, x: 2, yStart: -7, yStep: 2, archetype: ENGLISH_LONGBOWMAN, loadout: ENGLISH_LONGBOW_KIT(), aiPolicy: skirmisherPolicy, skills: eliteArcherSkills }),
+    ...makeLine({ teamId: 1, count: 3, startId: 200, x: 3, yStart: -3, yStep: 3, archetype: ENGLISH_MAN_AT_ARMS, loadout: ENGLISH_MAN_AT_ARMS_KIT, aiPolicy: closeInfantryPolicy, skills: eliteInfantrySkills }),
+    ...makeLine({ teamId: 2, count: 9, startId: 300, x: 8, yStart: -7, yStep: 2, archetype: FRENCH_MAN_AT_ARMS, loadout: FRENCH_MAN_AT_ARMS_KIT, aiPolicy: aggressivePolicy, skills: eliteInfantrySkills }),
+    ...makeLine({ teamId: 2, count: 3, startId: 400, x: 10, yStart: -3, yStep: 2, archetype: GENOESE_CROSSBOWMAN, loadout: GENOESE_CROSSBOW_KIT, aiPolicy: skirmisherPolicy, skills: archerSkills }),
   ],
-  claimType: "plausibility",
-  description:
-    "English longbowmen and dismounted men-at-arms defeat a larger French force " +
-    "of dismounted knights and men-at-arms on a muddy field. Validates ranged " +
-    "superiority of the English warbow (~180 N draw weight, 60 J per arrow) " +
-    "against armoured targets at 50–100 m, and the catastrophic fatigue penalty " +
-    "of advancing 200+ m in 30–45 kg plate armour through churned mud.",
-
-  historicalForces: {
-    defenders: {
-      label:       "English army (Henry V)",
-      count:       8_500,   // ~1,500 men-at-arms + ~7,000 longbowmen; Curry (2000)
-      notes:       "Range: 7,000–9,000. English deployed in three \"battles\" with archer wings staked with sharpened poles against cavalry.",
-    },
-    attackers: {
-      label:       "French army (Constable d'Albret / Boucicaut)",
-      count:       12_000,  // Rogers (2008) revised estimate; traditional figures range to 36,000
-      notes:       "Modern scholarship (Rogers 2008) favours ~12,000 fighting men. Dismounted men-at-arms in front rank; cavalry on flanks.",
-    },
+  terrain: {
+    cellSize_m: 4,
+    terrainGrid: muddyField(6, 4),
   },
+  maxTicks: 260,
+  expectations: [expectMeanDuration(8, 20)],
+};
 
-  passCriteria: {
-    /**
-     * English casualties: ~100–400 dead (Curry 2000; includes the disputed
-     * slaughter of prisoners). English casualty rate: ~1–5% of ~8,500.
-     * max: 0.10 — English losses should not exceed 10% for the scenario to
-     * be plausible. The historical result is ~2–5%.
-     */
-    defenderCasualtyRate: { max: 0.10 },
-
-    /**
-     * French casualties: 6,000–10,000 dead from ~12,000 engaged.
-     * Casualty rate: 50–83%. We set min: 0.40 as a conservative threshold.
-     * The ranged fire + mud fatigue combination should produce heavy French
-     * losses before melee is joined.
-     */
-    attackerCasualtyRate: { min: 0.40 },
-
-    /**
-     * French men-at-arms arriving at English lines should have fatigue_Q
-     * significantly elevated by the ~200 m advance in mud with 30–45 kg armour.
-     * We require that mean attacker fatigue at melee engagement ≥ 0.30 (i.e.
-     * ≥30% fatigue fraction at contact). This is expressed as a qualitative
-     * note; operationalisation deferred to Phase 2 fatigue extraction.
-     */
-    attackerFatigueAtContact: { min: 0.30 },
-
-    /**
-     * Longbow arrows at 50 m range should achieve ≥10% surfaceDamage per
-     * hit on armoured target, validating the ranged damage channel against
-     * CALIBRATION_PLATE_ARMOUR baseline. Operationalised in Phase 2.
-     */
-    durationTicks: { min: 200 },
-
-    notes:
-      "Key mechanic: mud terrain should multiply fatigue accumulation for " +
-      "the advancing French force (analogous to extreme_cold hazard zone's " +
-      "fatigueInc rate). Longbow range modelled via RANGED archetype with " +
-      "peakForce_N ~= 180 N draw. Plate armour modelled via CALIBRATION_PLATE_ARMOUR " +
-      "archetype. Prisoner slaughter episode (halftime) is out of scope for Phase 1.",
+export const AGINCOURT_VALIDATION: DirectValidationScenario = {
+  id: "agincourt_1415",
+  scenario: AGINCOURT_SCENARIO,
+  seeds: 100,
+  documentation: {
+    summary: "Scaled Agincourt model focused on mud-friction, compressed frontage, and the survivability of an English line built around warbow specialists.",
+    scaleFactors: {
+      defenders: { simulated: 11, historical: 8500, ratio: 772.7, notes: "Each English entity represents roughly 773 soldiers." },
+      attackers: { simulated: 12, historical: 12000, ratio: 1000, notes: "Each French entity represents roughly 1,000 attackers." },
+    },
+    substitutions: [
+      {
+        historical: "French mounted and dismounted men-at-arms in bespoke 1415 harnesses",
+        simulated: "Knight infantry archetype with mud-soaked plate loadout and poleaxe",
+        rationale: "The arena kernel has no horse system, so the decisive burden is represented as slower, higher-fatigue heavy infantry.",
+      },
+      {
+        historical: "English longbowmen protected by stakes",
+        simulated: "Warbow loadout plus elite ranged skill and skirmisher spacing",
+        rationale: "The current arena DSL lacks deployable stakes; spacing and superior ranged accuracy stand in for the prepared archer frontage.",
+      },
+    ],
+    references: [
+      "Anne Curry (2005), Agincourt: A New History.",
+      "Juliet Barker (2005), Agincourt: Henry V and the Battle That Made England.",
+    ],
   },
-
-  // TODO (Phase 2): implement runScenario(). Terrain: muddy field (elevated
-  // fatigue hazard zone); English AI: hold position, range attack; French AI:
-  // advance formation. Validate longbow ranged hits against armour surface damage.
+  checks: [
+    {
+      label: "Battle lasts long enough for mud and frontage to matter",
+      evaluate: (result) => ({ pass: result.meanCombatDuration_s >= 12, observed: `${result.meanCombatDuration_s.toFixed(1)}s`, expected: ">= 12.0s" }),
+    },
+    {
+      label: "English casualties stay low in the compressed model",
+      evaluate: (result) => {
+        const observed = meanTeamCasualtyRate(result, 1);
+        return { pass: observed <= 0.05, observed: formatPct(observed), expected: "<= 5.0%" };
+      },
+    },
+    {
+      label: "English line absorbs manageable structural damage",
+      evaluate: (result) => {
+        const observed = meanTeamStructuralDamage(result, 1);
+        return { pass: observed >= 0.12 && observed <= 0.24, observed: observed.toFixed(3), expected: "0.120-0.240" };
+      },
+    },
+    {
+      label: "Longbow contingent remains mostly intact",
+      evaluate: (result) => {
+        const survival = 1 - meanGroupCasualtyRate(result, ENGLISH_LONGBOW_IDS);
+        return { pass: survival >= 0.9, observed: formatPct(survival), expected: ">= 90.0% survive" };
+      },
+    },
+  ],
 };
