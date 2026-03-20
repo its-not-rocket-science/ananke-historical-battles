@@ -12,13 +12,15 @@
   },
   "files": ["dist", "scenarios"],
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "build": "tsc",
     "test": "vitest run",
-    "run:battles": "node dist/tools/run-battles.js",
+    "validate": "node dist/src/tools/run-battles.js",
+    "run:battles": "node dist/src/tools/run-battles.js",
     "prepublishOnly": "npm run build && npm run test"
   },
   "dependencies": {
-    "@its-not-rocket-science/ananke": "^0.1.1"
+    "@its-not-rocket-science/ananke": "^0.1.4"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
