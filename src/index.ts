@@ -1,30 +1,25 @@
-/**
- * @its-not-rocket-science/ananke-historical-battles
- *
- * Public API surface. Exports all four Phase 1 scenario stubs and shared types.
- */
+import type { ArenaScenario } from "./ananke-internal.js";
 
-export type { BattleScenario, BattlePassCriteria, BattleRunResult, ClaimType, HistoricalForce } from "./types.js";
+export type { DirectValidationScenario, ScenarioDocumentation, ScenarioScaleFactor, ScenarioSubstitution, ValidationCheck, ValidationObservation, ValidationRunResult } from "./types.js";
 
-import { THERMOPYLAE_SCENARIO }    from "./scenarios/thermopylae.js";
-import { AGINCOURT_SCENARIO }      from "./scenarios/agincourt.js";
-import { MARATHON_SCENARIO }       from "./scenarios/marathon.js";
-import { CONSTANTINOPLE_SCENARIO } from "./scenarios/constantinople.js";
+export { AGINCOURT_SCENARIO, AGINCOURT_VALIDATION } from "./scenarios/agincourt.js";
+export { THERMOPYLAE_SCENARIO, THERMOPYLAE_VALIDATION } from "./scenarios/thermopylae.js";
+export { CRECY_SCENARIO, CRECY_VALIDATION } from "./scenarios/crecy.js";
+export { HASTINGS_SCENARIO, HASTINGS_VALIDATION } from "./scenarios/hastings.js";
+export { CANNAE_SCENARIO, CANNAE_VALIDATION } from "./scenarios/cannae.js";
 
-export {
-  THERMOPYLAE_SCENARIO,
-  AGINCOURT_SCENARIO,
-  MARATHON_SCENARIO,
-  CONSTANTINOPLE_SCENARIO,
-};
+import { AGINCOURT_VALIDATION } from "./scenarios/agincourt.js";
+import { CANNAE_VALIDATION } from "./scenarios/cannae.js";
+import { CRECY_VALIDATION } from "./scenarios/crecy.js";
+import { HASTINGS_VALIDATION } from "./scenarios/hastings.js";
+import { THERMOPYLAE_VALIDATION } from "./scenarios/thermopylae.js";
 
-/**
- * All Phase 1 scenarios in chronological order by year.
- * Import individual named exports for tree-shaking in host applications.
- */
-export const ALL_SCENARIOS = [
-  MARATHON_SCENARIO,       // -490
-  THERMOPYLAE_SCENARIO,    // -480
-  AGINCOURT_SCENARIO,      //  1415
-  CONSTANTINOPLE_SCENARIO, //  1453
+export const ALL_VALIDATIONS = [
+  THERMOPYLAE_VALIDATION,
+  AGINCOURT_VALIDATION,
+  CRECY_VALIDATION,
+  HASTINGS_VALIDATION,
+  CANNAE_VALIDATION,
 ] as const;
+
+export const ALL_SCENARIOS: ArenaScenario[] = ALL_VALIDATIONS.map((validation) => validation.scenario);

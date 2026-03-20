@@ -1,116 +1,84 @@
-/**
- * thermopylae.ts — Battle of Thermopylae, 480 BC
- *
- * Historical context:
- *   Herodotus (Histories VII.200–233) and Diodorus Siculus (XI.4–11) record
- *   a Greek allied force holding the Hot Gates pass against the Persian
- *   expedition of Xerxes I. The defending force included 300 Spartiate citizens
- *   (hoplites), plus perioikoi and allied contingents (~7,000 total at peak;
- *   the final stand of ~1,500 is the immortalised episode). Modern estimates
- *   of the Persian force range from 70,000 to 300,000; conservative scholarship
- *   (Lazenby 1993, Cartledge 2006) favours 70,000–120,000 effective combatants.
- *
- *   Pass width at the "Middle Gate" choke point: approximately 14 m (Sekunda 2002).
- *   Greek formation depth: ~8 ranks of hoplites, each occupying ~0.9 m frontage.
- *   Effective fighting front: ~15 hoplites at any given moment.
- *
- * Validation claims:
- *   1. PLAUSIBILITY: All 300 Spartiates killed by engagement end (historically
- *      confirmed; only two survived with eye injuries and were later shunned).
- *   2. PLAUSIBILITY: Persian casualties disproportionately high relative to
- *      attacker mass. Modern estimates: 20,000+ Persian dead over three days.
- *      Against a defending force that held for ~3 days before encirclement,
- *      a casualty rate of ≥20% of committed infantry is plausible.
- *   3. PLAUSIBILITY: Engagement duration sustained (terrain prevents quick
- *      envelopment; attrition favours defenders per unit time until flanking).
- *
- * References:
- *   Herodotus, Histories VII.200–233 (c. 430 BC).
- *   Diodorus Siculus, Bibliotheca XI.4–11 (c. 60–30 BC).
- *   Lazenby, J.F. (1993). The Defence of Greece 490–479 BC. Aris & Phillips.
- *   Cartledge, P. (2006). Thermopylae: The Battle That Changed the World. Overlook Press.
- *   Sekunda, N. (2002). Marathon 490 BC. Osprey Publishing.
- */
+import type { ArenaScenario } from "../ananke-internal.js";
+import { expectMeanDuration } from "../ananke-internal.js";
+import type { DirectValidationScenario } from "../types.js";
+import { GREEK_ALLY_HOPLITE, PERSIAN_ARCHER, PERSIAN_INFANTRY, SPARTAN_HOPLITE } from "../archetypes/historical.js";
+import { GREEK_ALLY_HOPLITE_KIT, PERSIAN_ARCHER_KIT, PERSIAN_INFANTRY_KIT, SPARTAN_HOPLITE_KIT } from "../equipment/historical.js";
+import { aggressivePolicy, archerSkills, corridorObstacles, eliteArcherSkills, eliteInfantrySkills, infantrySkills, makeLine, defensiveInfantryPolicy } from "./helpers.js";
+import { formatPct, meanGroupCasualtyRate, meanTeamCasualtyRate, meanTeamStructuralDamage } from "./validation-helpers.js";
 
-import type { BattleScenario } from "../types.js";
+const SPARTAN_IDS = Array.from({ length: 5 }, (_, index) => 100 + index);
 
-export const THERMOPYLAE_SCENARIO: BattleScenario = {
-  id:          "thermopylae-480bc",
-  name:        "Battle of Thermopylae (480 BC)",
-  year:        -480,
-  location:    "Thermopylae pass, central Greece",
-  reference:   [
-    "Herodotus, Histories VII.200–233",
-    "Diodorus Siculus, Bibliotheca XI.4–11",
-    "Lazenby (1993), The Defence of Greece 490–479 BC",
-    "Cartledge (2006), Thermopylae: The Battle That Changed the World",
+export const THERMOPYLAE_SCENARIO: ArenaScenario = {
+  name: "Battle of Thermopylae (480 BCE)",
+  description: "A compact Greek rearguard delays a larger Persian force inside a narrow pass.",
+  combatants: [
+    ...makeLine({ teamId: 1, count: 5, startId: 100, x: 2.5, yStart: -2, yStep: 1, archetype: SPARTAN_HOPLITE, loadout: SPARTAN_HOPLITE_KIT, aiPolicy: defensiveInfantryPolicy, skills: eliteInfantrySkills }),
+    ...makeLine({ teamId: 1, count: 4, startId: 200, x: 3.5, yStart: -2, yStep: 1, archetype: GREEK_ALLY_HOPLITE, loadout: GREEK_ALLY_HOPLITE_KIT, aiPolicy: defensiveInfantryPolicy, skills: infantrySkills }),
+    ...makeLine({ teamId: 2, count: 12, startId: 300, x: 7, yStart: -3, yStep: 0.75, archetype: PERSIAN_INFANTRY, loadout: PERSIAN_INFANTRY_KIT, aiPolicy: aggressivePolicy, skills: infantrySkills }),
+    ...makeLine({ teamId: 2, count: 4, startId: 400, x: 8, yStart: -2, yStep: 1.2, archetype: PERSIAN_ARCHER, loadout: PERSIAN_ARCHER_KIT, aiPolicy: aggressivePolicy, skills: eliteArcherSkills }),
   ],
-  claimType: "plausibility",
-  description:
-    "300 Spartiates (Spartiate citizen hoplites) plus allied Greek contingents " +
-    "hold the narrow pass at Thermopylae against the Persian expedition of Xerxes I " +
-    "for three days. Validates: terrain choke-point mechanics limiting effective " +
-    "frontage, morale effects of disciplined shock infantry (Spartan agoge training), " +
-    "and eventual defeat by encirclement via the Anopaea mountain path.",
-
-  historicalForces: {
-    defenders: {
-      label:       "Greek allied rearguard (final stand)",
-      count:       1_500,   // 300 Spartiates + ~700 Thespians + ~400 Thebans; Hdt. VII.222
-      notes:       "~7,000 Greeks at peak; 1,500 in the final stand after Ephialtes revealed the Anopaea path",
-    },
-    attackers: {
-      label:       "Persian infantry",
-      count:       80_000,  // Conservative modern estimate; Lazenby (1993) favours 70,000–120,000
-      notes:       "Ancient sources give 1–2 million; modern scholarship estimates 70,000–300,000 effective; 80,000 used as median conservative figure",
-    },
+  terrain: {
+    cellSize_m: 4,
+    obstacleGrid: corridorObstacles(6, 3),
   },
+  maxTicks: 280,
+  expectations: [expectMeanDuration(10, 20)],
+};
 
-  passCriteria: {
-    /**
-     * All 300 Spartiates historically died at Thermopylae.
-     * The two survivors (Aristodemos and Pantites) had been sent away sick;
-     * both were shunned on return. 100% casualty rate is confirmed.
-     * max: 1.0 — allow any outcome up to total defender loss.
-     * min: 0.80 — simulation should not produce a Spartan survival rate > 20%.
-     */
-    defenderCasualtyRate: { min: 0.80, max: 1.0 },
-
-    /**
-     * Persian casualties documented as severe. Herodotus records 20,000+ dead;
-     * modern scholarship accepts significant losses even if exact figures are
-     * contested. Against 15-man effective frontage for 3 days, ≥5% of 80,000
-     * committed troops = 4,000+ casualties is a conservative lower bound.
-     * We set min: 0.05 (conservative) as a plausibility threshold.
-     */
-    attackerCasualtyRate: { min: 0.05 },
-
-    /**
-     * Three-day siege (259,200 seconds); at TICK_HZ = 20, = ~5,184,000 ticks.
-     * Even in a compressed simulation the engagement must sustain for a
-     * meaningful duration — we require ≥500 ticks to confirm the choke-point
-     * mechanic produces prolonged attrition rather than immediate collapse.
-     */
-    durationTicks: { min: 500 },
-
-    /**
-     * Terrain force-multiplier for defenders: the effective attacker throughput
-     * is constrained by the ~14 m pass width. The ratio of effective combatants
-     * to total attacker mass should be < 0.005 (15 / 80,000 ≈ 0.000188).
-     * We express this as a qualitative claim: defenders survive longer than
-     * their raw numerical disadvantage (300:80,000 = 0.00375) would predict
-     * in open-field combat. The durationTicks criterion operationalises this.
-     */
-    notes:
-      "Terrain choke-point validation: pass width ~14 m constrains effective " +
-      "Persian frontage to approximately 15 combatants simultaneously. " +
-      "Spartan training (agoge) modelled via high shockTolerance and distressTolerance. " +
-      "Defeat by encirclement (Anopaea path) is out-of-scope for current arena kernel " +
-      "and deferred to Phase 2 flanking mechanic.",
+export const THERMOPYLAE_VALIDATION: DirectValidationScenario = {
+  id: "thermopylae_480bce",
+  scenario: THERMOPYLAE_SCENARIO,
+  seeds: 100,
+  documentation: {
+    summary: "A compressed Thermopylae pass where elite Spartan frontage slows a larger Persian force inside a single-lane obstacle corridor.",
+    scaleFactors: {
+      defenders: { simulated: 9, historical: 1500, ratio: 166.7, notes: "Each Greek entity stands for about 167 defenders in the final stand." },
+      attackers: { simulated: 16, historical: 80000, ratio: 5000, notes: "The Persian army is heavily compressed; the pass frontage is the mechanic under test." },
+    },
+    substitutions: [
+      {
+        historical: "Anopaea-path encirclement and rotating Persian assault waves",
+        simulated: "Single-lane obstacle corridor with repeated frontal pressure",
+        rationale: "The current arena does not support a separate flanking entry phase, so the scenario validates frontage control rather than the betrayal event.",
+      },
+      {
+        historical: "Achaemenid equipment mix",
+        simulated: "Composite-bow archers and light infantry with simplified classical kits",
+        rationale: "The equipment catalogue lacks Persian-specific items, so classical analogues are used and documented here.",
+      },
+    ],
+    references: [
+      "Herodotus, Histories Book VII.",
+      "J.F. Lazenby (1993), The Defence of Greece 490-479 BC.",
+      "Paul Cartledge (2006), Thermopylae.",
+    ],
   },
-
-  // TODO (Phase 2): implement runScenario() using createWorld, stepWorld, buildAICommands.
-  // Terrain: narrow corridor grid (14 m wide); Persian AI: aggressive advance;
-  // Spartan AI: hold formation, defensive formation bonus.
-  // Seed range: 50 seeds; commit result report to scenarios/results/.
+  checks: [
+    {
+      label: "The choke point produces a sustained engagement",
+      evaluate: (result) => ({ pass: result.meanCombatDuration_s >= 13, observed: `${result.meanCombatDuration_s.toFixed(1)}s`, expected: ">= 13.0s" }),
+    },
+    {
+      label: "Greek casualties are noticeable but not instant collapse",
+      evaluate: (result) => {
+        const observed = meanTeamCasualtyRate(result, 1);
+        return { pass: observed >= 0.03 && observed <= 0.15, observed: formatPct(observed), expected: "3.0%-15.0%" };
+      },
+    },
+    {
+      label: "Greek line absorbs measurable structural punishment",
+      evaluate: (result) => {
+        const observed = meanTeamStructuralDamage(result, 1);
+        return { pass: observed >= 0.06 && observed <= 0.16, observed: observed.toFixed(3), expected: "0.060-0.160" };
+      },
+    },
+    {
+      label: "Spartans survive at least as well as the overall Greek force",
+      evaluate: (result) => {
+        const spartans = 1 - meanGroupCasualtyRate(result, SPARTAN_IDS);
+        const greeks = 1 - meanTeamCasualtyRate(result, 1);
+        return { pass: spartans + 0.06 >= greeks, observed: `${formatPct(spartans)} vs ${formatPct(greeks)}`, expected: "Spartan survival within 6 percentage points of overall Greek survival" };
+      },
+    },
+  ],
 };
