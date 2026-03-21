@@ -37,6 +37,45 @@ export const GENOESE_CROSSBOWMAN = tweak(HUMAN_BASE, {
   fatigueRate: q(1.02),
 });
 
+export const AGINCOURT_ENGLISH_ARCHER = tweak(ENGLISH_LONGBOWMAN, {
+  peakForce_N: to.N(1950),
+  peakPower_W: to.W(1280),
+  controlQuality: q(0.69),
+  fineControl: q(0.73),
+  stability: q(0.63),
+  fatigueRate: q(0.89),
+  recoveryRate: q(1.12),
+});
+
+export const AGINCOURT_ENGLISH_MAN_AT_ARMS = tweak(ENGLISH_MAN_AT_ARMS, {
+  mass_kg: to.kg(80),
+  peakForce_N: to.N(1820),
+  controlQuality: q(0.68),
+  stability: q(0.72),
+  shockTolerance: q(0.68),
+  fatigueRate: q(0.96),
+});
+
+export const AGINCOURT_FRENCH_VANGUARD = tweak(FRENCH_MAN_AT_ARMS, {
+  mass_kg: to.kg(84),
+  peakForce_N: to.N(1780),
+  controlQuality: q(0.62),
+  stability: q(0.66),
+  shockTolerance: q(0.56),
+  fatigueRate: q(1.16),
+  recoveryRate: q(0.93),
+});
+
+export const AGINCOURT_FRENCH_REARGUARD = tweak(FRENCH_MAN_AT_ARMS, {
+  mass_kg: to.kg(83),
+  peakForce_N: to.N(1730),
+  controlQuality: q(0.61),
+  stability: q(0.64),
+  shockTolerance: q(0.54),
+  fatigueRate: q(1.12),
+  recoveryRate: q(0.95),
+});
+
 export const SPARTAN_HOPLITE = tweak(KNIGHT_INFANTRY, {
   peakForce_N: to.N(1850),
   controlQuality: q(0.7),

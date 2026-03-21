@@ -1,4 +1,5 @@
 import type { ArenaCombatant } from "../src/ananke-internal.js";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   AGINCOURT_SCENARIO,
@@ -62,4 +63,11 @@ describe("historical arena scenarios", () => {
       }
     });
   }
+});
+
+it("documents Agincourt physical grounding in sources.md", () => {
+  const sources = readFileSync(new URL("../sources.md", import.meta.url), "utf8");
+  expect(sources).toContain("## Agincourt (1415)");
+  expect(sources).toContain("Mary Rose Trust");
+  expect(sources).toContain("Metropolitan Museum of Art");
 });
