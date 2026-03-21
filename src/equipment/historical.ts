@@ -222,6 +222,22 @@ export const GENOESE_CROSSBOW_KIT: Loadout = {
   items: [GENOESE_CROSSBOW, ARMING_SWORD, LEATHER],
 };
 
+export const AGINCOURT_ARCHER_KIT: Loadout = {
+  items: [ENGLISH_WARBOW, MACE, LEATHER],
+};
+
+export const AGINCOURT_ENGLISH_MAN_AT_ARMS_KIT: Loadout = {
+  items: [MACE, KNIGHTLY_PLATE],
+};
+
+export const AGINCOURT_FRENCH_VANGUARD_KIT: Loadout = {
+  items: [FRENCH_POLEAXE, MUD_SOAKED_PLATE],
+};
+
+export const AGINCOURT_FRENCH_REARGUARD_KIT: Loadout = {
+  items: [ARMING_SWORD, MUD_SOAKED_PLATE],
+};
+
 export const SPARTAN_HOPLITE_KIT: Loadout = {
   items: [LONG_SPEAR, XIPHOS, HOPLITE_PANOPLY, LARGE_ASPIS],
 };
